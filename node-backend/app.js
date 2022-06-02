@@ -38,7 +38,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect('mongodb+srv://ziko442:zikooo1995.@cluster0.mp06q.mongodb.net/places?retryWrites=true&w=majority')
+  .connect(`mongodb+srv://ziko442:zikooo1995.@cluster0.mp06q.mongodb.net/places?retryWrites=true&w=majority`)
   .then(() => {
     app.listen(5000);
   })
