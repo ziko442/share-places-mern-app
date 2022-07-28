@@ -3,19 +3,18 @@ const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
 
-
 const getUsers = async (req, res, next) => {
   let users;
   try {
-    users = await User.find({}, '-password');
+    users = await User.find({}, "-password");
   } catch (err) {
     const error = new HttpError(
-      'Fetching users failed, please try again later.',
+      "Fetching users failed, please try again later.",
       500
     );
     return next(error);
   }
-  res.json({ users: users.map(user => user.toObject({ getters: true })) });
+  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
 const signup = async (req, res, next) => {
@@ -49,7 +48,7 @@ const signup = async (req, res, next) => {
   const createdUser = new User({
     name,
     email,
-    image: 'https://picsum.photos/200/300',
+    image: "https://picsum.photos/200/300",
     password,
     places: [],
   });
@@ -57,14 +56,11 @@ const signup = async (req, res, next) => {
   try {
     await createdUser.save();
   } catch (err) {
-    const error = new HttpError(
-      "Signing Up failed, please try again.",
-      500
-    );
+    const error = new HttpError("Signing Up failed, please try again.", 500);
     return next(error);
   }
 
-  res.status(201).json({ user: createdUser.toObject({getters: true}) });
+  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 };
 
 const login = async (req, res, next) => {
@@ -74,10 +70,7 @@ const login = async (req, res, next) => {
   try {
     existingUser = await User.findOne({ email: email });
   } catch (err) {
-    const error = new HttpError(
-      "Logging in failed, please try again.",
-      500
-    );
+    const error = new HttpError("Logging in failed, please try again.", 500);
     return next(error);
   }
 
@@ -89,8 +82,10 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-
-  res.json({ message: "Logged in!" });
+  res.json({
+    message: "Logged in!",
+    user: existingUser.toObject({ getters: true }),
+  });
 };
 
 exports.getUsers = getUsers;
