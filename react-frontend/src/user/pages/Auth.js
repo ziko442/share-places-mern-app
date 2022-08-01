@@ -1,149 +1,67 @@
-import React, { useState, useContext } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
-import Card from '../../shared/components/UIElements/Card';
-import Input from '../../shared/components/FormElements/Input';
-import Button from '../../shared/components/FormElements/Button';
-import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import {
-  VALIDATOR_EMAIL,
-  VALIDATOR_MINLENGTH,
-  VALIDATOR_REQUIRE
-} from '../../shared/util/validators';
-import { useForm } from '../../shared/hooks/form-hook';
-import { useHttpClient } from '../../shared/hooks/http-hook';
-import { AuthContext } from '../../shared/context/auth-context';
-import './Auth.css';
+import Button from './Button';
+import './ImageUpload.css';
 
-const Auth = () => {
-  const auth = useContext(AuthContext);
-  const [isLoginMode, setIsLoginMode] = useState(true);
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+const ImageUpload = props => {
+  const [file, setFile] = useState();
+  const [previewUrl, setPreviewUrl] = useState();
+  const [isValid, setIsValid] = useState(false);
 
-  const [formState, inputHandler, setFormData] = useForm(
-    {
-      email: {
-        value: '',
-        isValid: false
-      },
-      password: {
-        value: '',
-        isValid: false
-      }
-    },
-    false
-  );
+  const filePickerRef = useRef();
 
-  const switchModeHandler = () => {
-    if (!isLoginMode) {
-      setFormData(
-        {
-          ...formState.inputs,
-          name: undefined
-        },
-        formState.inputs.email.isValid && formState.inputs.password.isValid
-      );
-    } else {
-      setFormData(
-        {
-          ...formState.inputs,
-          name: {
-            value: '',
-            isValid: false
-          }
-        },
-        false
-      );
+  useEffect(() => {
+    if (!file) {
+      return;
     }
-    setIsLoginMode(prevMode => !prevMode);
+    const fileReader = new FileReader();
+    fileReader.onload = () => {
+      setPreviewUrl(fileReader.result);
+    };
+    fileReader.readAsDataURL(file);
+  }, [file]);
+
+  const pickedHandler = event => {
+    let pickedFile;
+    let fileIsValid = isValid;
+    if (event.target.files && event.target.files.length === 1) {
+      pickedFile = event.target.files[0];
+      setFile(pickedFile);
+      setIsValid(true);
+      fileIsValid = true;
+    } else {
+      setIsValid(false);
+      fileIsValid = false;
+    }
+    props.onInput(props.id, pickedFile, fileIsValid);
   };
 
-  const authSubmitHandler = async event => {
-    event.preventDefault();
-
-    if (isLoginMode) {
-      try {
-        const responseData =  await sendRequest(
-          'http://localhost:5000/api/users/login',
-          'POST',
-          JSON.stringify({
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value
-          }),
-          {
-            'Content-Type': 'application/json'
-          }
-        );
-        auth.login(responseData.user.id);
-      } catch (err) {}
-    } else {
-      try {
-        const responseData = await sendRequest(
-          'http://localhost:5000/api/users/signup',
-          'POST',
-          JSON.stringify({
-            name: formState.inputs.name.value,
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value
-          }),
-          {
-            'Content-Type': 'application/json'
-          }
-        );
-
-        auth.login(responseData.user.id);
-      } catch (err) {}
-    }
+  const pickImageHandler = () => {
+    filePickerRef.current.click();
   };
 
   return (
-    <React.Fragment>
-      <ErrorModal error={error} onClear={clearError} />
-      <Card className="authentication">
-        {isLoading && <LoadingSpinner asOverlay />}
-        <h2>Login Required</h2>
-        <hr />
-        <form onSubmit={authSubmitHandler}>
-          {!isLoginMode && (
-            <Input
-              element="input"
-              id="name"
-              type="text"
-              label="Your Name"
-              validators={[VALIDATOR_REQUIRE()]}
-              errorText="Please enter a name."
-              onInput={inputHandler}
-            />
-          )}
-          <Input
-            element="input"
-            id="email"
-            type="email"
-            label="E-Mail"
-            validators={[VALIDATOR_EMAIL()]}
-            errorText="Please enter a valid email address."
-            onInput={inputHandler}
-          />
-          <Input
-            element="input"
-            id="password"
-            type="password"
-            label="Password"
-            validators={[VALIDATOR_MINLENGTH(6)]}
-            errorText="Please enter a valid password, at least 6 characters."
-            onInput={inputHandler}
-          />
-          <Button type="submit" disabled={!formState.isValid}>
-            {isLoginMode ? 'LOGIN' : 'SIGNUP'}
-          </Button>
-        </form>
-        {/* test */}
-        <Button inverse onClick={switchModeHandler}>
-          SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}
+    <div className="form-control">
+      <input
+        id={props.id}
+        ref={filePickerRef}
+        style={{ display: 'none' }}
+        type="file"
+        accept=".jpg,.png,.jpeg"
+        onChange={pickedHandler}
+      />
+      <div className={`image-upload ${props.center && 'center'}`}>
+        <div className="image-upload__preview">
+          {previewUrl && <img src={previewUrl} alt="Preview" />}
+          {!previewUrl && <p>Please pick an image.</p>}
+        </div>
+        <Button type="button" onClick={pickImageHandler}>
+          PICK IMAGE
         </Button>
-      </Card>
-    </React.Fragment>
+      </div>
+      {!isValid && <p>{props.errorText}</p>}
+    </div>
   );
 };
 
-export default Auth;
+export default ImageUpload;
