@@ -18,7 +18,7 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(false);
 
-  const login = useCallback((uid) => {
+  const login = useCallback(uid => {
     setIsLoggedIn(true);
     setUserId(uid);
   }, []);
@@ -67,7 +67,12 @@ const App = () => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn: isLoggedIn,userId: userId, login: login, logout: logout }}
+      value={{
+        isLoggedIn: isLoggedIn,
+        userId: userId,
+        login: login,
+        logout: logout
+      }}
     >
       <Router>
         <MainNavigation />
