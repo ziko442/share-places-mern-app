@@ -1,0 +1,9 @@
+{
+    "env":{
+        "DB_USER": "ziko442",
+        "DB_PASSWORD": "zikooo1995",
+        "DB_NAME": "places",
+        "GOOGLR_API_KEY": "AIzaSyDgLmMpKCzveJf1_yuA0fUzzhy0WRChvZA",
+        "JWT_KEY": "supersecret_dont_share"
+    }
+}
